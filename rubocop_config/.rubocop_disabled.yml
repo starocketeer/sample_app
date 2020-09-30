@@ -85,4 +85,3 @@ Rails/ReflectionClassName:
 Rails/HasManyOrHasOneDependent:
   Description: "Define the dependent option to the has_many and has_one associations."
   Enabled: false
-  
