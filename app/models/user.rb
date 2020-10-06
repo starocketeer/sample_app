@@ -9,7 +9,8 @@ class User < ApplicationRecord
     uniqueness: true
   
   validates :password, presence: true, 
-    length: { minimum: Settings.validations.password.min_length }
+    length: { minimum: Settings.validations.password.min_length },
+    allow_nil: true
   
   has_secure_password 
   
@@ -20,6 +21,10 @@ class User < ApplicationRecord
       cost = ActiveModel::SecurePassword.min_cost ? Bcrypt::Engine::MIN_COST :
                                                     Bcrypt::Engine.cost
       Bcrypt::Password.create(string, cost: cost)
+    end
+
+    def new_token
+      SecureRandom.urlsafe_base64
     end
 
     def new_token
@@ -47,7 +52,22 @@ class User < ApplicationRecord
   def downcase_email
     email.downcase!
   end
-  
+ 
+  def remember
+    self.remember_token = User.new_token
+    update_attribute :remember_digest, User.digest(remember_token)
+  end
+
+  def authenticated?(remember_token)
+    return false if remember_digest.nil?
+
+    Bcrypt::Password.new(remember_digest).is_password?(remember_token)
+  end
+
+  def forgets
+    update_attribute :remember_digest, nil
+  end
+
   private
   
   def downcase_email
