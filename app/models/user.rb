@@ -12,7 +12,8 @@ class User < ApplicationRecord
     length: { minimum: Settings.validations.password.min_length },
     allow_nil: true
   
-  has_secure_password 
+  has_secure_password
+  has_many :microposts, dependent: :destroy
   
   before_save :downcase_email
   before_create :create_activation_digest 
@@ -27,43 +28,11 @@ class User < ApplicationRecord
     def new_token
       SecureRandom.urlsafe_base64
     end
-
-    def new_token
-      SecureRandom.urlsafe_base64
-    end
-
-    def new_token
-      SecureRandom.urlsafe_base64
-    end
   end
  
   def remember
     self.remember_token = User.new_token
     update_attribute :remember_digest, User.digest(remember_token)
-  end
- 
-  def remember
-    self.remember_token = User.new_token
-    update_attribute :remember_digest, User.digest(remember_token)
-  end
-
-  def authenticated? attribute, token
-    digest = send "#{attribute}_digest"
-    return false if remember_digest.nil?
-
-    Bcrypt::Password.new(remember_digest).is_password?(remember_token)
-  end
-
-  def forgets
-    update_attribute :remember_digest, nil
-  end
-
-  def activate
-    update_attribute :true, activated_at: Time.zone.now
-  end
-    
-  def send_activation_email
-    UserMailer.account_activation(self).deliver_now
   end
 
   def authenticated? attribute, token
@@ -97,22 +66,15 @@ class User < ApplicationRecord
   def password_reset_expired?
     reset_sent_at < Settings.password_expired_time.hours.ago
   end
- 
-  def remember
-    self.remember_token = User.new_token
-    update_attribute :remember_digest, User.digest(remember_token)
+  
+  def feed
+    microposts
   end
 
-  def authenticated?(remember_token)
-    return false if remember_digest.nil?
-
-    Bcrypt::Password.new(remember_digest).is_password?(remember_token)
+  def display_image
+    image.variant(resize_to_limit: [500, 500])
   end
-
-  def forgets
-    update_attribute :remember_digest, nil
-  end
-
+  
   private
   
   def downcase_email
