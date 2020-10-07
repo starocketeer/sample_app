@@ -10,6 +10,8 @@ class UsersController < ApplicationController
 
   def show
     @user = User.find_by params[:id]
+    @microposts = @user.microposts.paginate(page: params[:page])
+    number of per page
   end
 
   def new 
@@ -29,11 +31,18 @@ class UsersController < ApplicationController
   end
 
   def edit
-     
+    @user = User.find_by params[:id]
+    if @user.edit user_params
+      flash.now[:success] = "User found"
+      render :edit
+    else
+      flash[:danger] = "User not found"
+      redirect_to root_url
+    end  
   end
 
-
-  def update 
+  def update
+    @user = User.find_by params[:id]
     if @user.update user_params
       flash.now[:success] = "Profile updated"
       redirect_to @user
@@ -44,11 +53,25 @@ class UsersController < ApplicationController
   end
 
   def destroy
-    @user.destroy
+    User.find_by params[:id].destroy
     flash[:success] = "User deleted"
     redirect_to users_url
   end
 
+  def following
+    @title = "Following"
+    @user = User.find_by params[:id]
+    @users = @user.following.paginate(page: params[:page])
+    render "show_follow"
+  end
+
+  def followers
+    @title = "Followers"
+    @user = User.find(params[:id])
+    @users = @user.followers.paginate(page: params[:page])
+    render "show_follow"
+  end
+  
   private
 
   def user_params
