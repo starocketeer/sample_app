@@ -37,30 +37,6 @@ class User < ApplicationRecord
       SecureRandom.urlsafe_base64
     end
   end
- 
-  def remember
-    self.remember_token = User.new_token
-    update_attribute :remember_digest, User.digest(remember_token)
-  end
-
-  def authenticated? attribute, token
-    digest = send "#{attribute}_digest"
-    return false if remember_digest.nil?
-
-    Bcrypt::Password.new(remember_digest).is_password?(remember_token)
-  end
-
-  def forgets
-    update_attribute :remember_digest, nil
-  end
-
-  def activate
-    update_attribute :true, activated_at: Time.zone.now
-  end
-    
-  def send_activation_email
-    UserMailer.account_activation(self).deliver_now
-  end
 
   def create_reset_digest
     self.reset_token = User.new_token
