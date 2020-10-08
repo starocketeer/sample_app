@@ -26,3 +26,4 @@ validations:
 remember_me: "1"
 password_expired_time: 2
 validates :user_id, presence: true
+per_page: 5
